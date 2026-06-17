@@ -1,104 +1,97 @@
 # MazeRunner
-**Game Developer Intern Assessment — Reliance Games x Zapak**
-**Built with Unity 6 LTS | Android APK**
+A physics-based mobile maze game built with Unity 6 LTS — my first ever Unity project.
 
 ---
 
-## Project Overview
+## About
 
-MazeRunner is a physics-based mobile maze game where the player controls a sphere navigating from a green Start Zone to a red Finish Zone. The maze contains 8 distinct navigation paths, 3 spinning static obstacles, 1 AI-patrolling obstacle, and a checkpoint system. The game is fully playable on both Android and PC.
+MazeRunner is a 3D mobile maze game where the player controls a ball navigating from a Start zone to a Finish zone through a maze with 8 distinct paths. Built entirely from scratch with no prior Unity or C# experience.
+
+The goal was to learn Unity fundamentals hands-on by building a complete, playable game — from maze generation to Android deployment.
+
+---
+
+## Gameplay
+
+- Roll the ball from the **green Start zone** to the **red Finish zone**
+- Avoid **pink spinning obstacles** — each hit costs 100 points and respawns you
+- Reach the **yellow Checkpoint** to save your progress mid-maze
+- Beat the maze as fast as possible for the highest score
+- Top 5 scores saved locally between sessions
+
+---
+
+## Features
+
+- **Physics-based movement** — Rigidbody.AddForce for natural rolling behavior
+- **8 navigation paths** — multiple routes through the maze, each with different risk/reward
+- **Procedural maze construction** — maze built programmatically from a grid array via Unity Editor script
+- **AI obstacle** — enemy cube patrols the fastest path, blocking the direct route
+- **Checkpoint system** — saves position mid-maze, respawns there on death
+- **Dual camera modes** — fixed top-down overview and smooth follow camera, switchable anytime
+- **Scoring system** — starts at 1000, decreases with time and obstacle penalties
+- **Top 5 local leaderboard** — persisted between sessions using PlayerPrefs
+- **Full UI** — Start, Pause, Win, and Lose screens with sensitivity adjustment
+- **Cross-platform input** — keyboard on PC, on-screen D-pad on Android
 
 ---
 
 ## Controls
 
 ### Android
-- **D-Pad buttons (bottom-left)** — Move the ball (Up/Down/Left/Right)
-- **CAM button (top-right)** — Switch between Top-Down and Follow camera
-- **PAUSE button (top-right)** — Pause the game
+- **D-Pad (bottom-left)** — Move the ball
+- **CAM button (top-right)** — Switch camera mode
+- **PAUSE button (top-right)** — Pause game
 
-### PC (Unity Editor)
+### PC
 - **WASD / Arrow Keys** — Move the ball
 - **C** — Switch camera mode
 - **ESC** — Pause game
 
-### Sensitivity
-Adjustable via the slider on the Start Screen before the game begins.
-
 ---
 
-## How to Play
+## Technical Highlights
 
-1. Launch the game and adjust sensitivity if needed
-2. Press **PLAY**
-3. Navigate the ball from the **green Start Zone** (left) to the **red Finish Zone** (right)
-4. Avoid **pink spinning obstacles** — each hit deducts 100 points and respawns the ball
-5. Cross the **yellow Checkpoint** in the center — if you die after this, you respawn at the checkpoint instead of the start
-6. Reach the Finish Zone to Win
-7. Score is based on completion speed and number of penalties
+### Grid-Based Maze Generation
+The maze is defined as a 27×27 integer grid (0 = wall, 1 = corridor) in a Unity Editor script. Wall positions are calculated mathematically from grid indices, centering the maze at world origin. This approach meant the designed layout exactly matched the built result — no manual coordinate errors.
 
----
+### Physics Movement
+Movement uses Rigidbody.AddForce in FixedUpdate rather than setting transform position directly. This produces natural rolling physics and frame-rate independent behavior across all devices.
 
-## Technical Decisions
+### Programmatic UI
+All UI panels, buttons, text, and sliders are built entirely in code using a builder pattern — no manual Unity Inspector setup. Canvas uses ScaleWithScreenSize for consistent layout across all Android screen resolutions.
 
-### Maze Generation via Editor Script
-The maze is built programmatically using a Unity Editor script (MazeGenerator.cs). The layout is defined as a 27×27 integer grid where 0 = wall and 1 = open corridor. Wall positions are calculated mathematically from grid indices, guaranteeing the built maze exactly matches the designed layout. This approach demonstrates editor tooling knowledge and eliminates manual coordinate errors.
-
-### Physics-Based Movement
-Player movement uses Rigidbody.AddForce() rather than directly setting transform position or velocity. This produces natural rolling behavior and realistic wall collisions. Rotation is frozen on all axes to prevent the ball from tipping.
-
-### Mobile Input — D-Pad over Accelerometer
-Accelerometer input was implemented and tested first. However, the ball required extreme phone tilt to produce meaningful movement, creating poor user experience. The decision was made to switch to on-screen D-pad buttons, which provide precise, comfortable control on all Android devices. This is a deliberate UX-driven engineering decision, not a shortcut.
-
-The D-pad is built programmatically via DpadSetup.cs using Unity's EventTrigger system, which handles press-and-hold reliably across all Android versions.
-
-### Dual Camera System
-Two camera modes implemented in CameraController.cs:
-- **Top-Down (default):** Fixed overhead view at height 35 (PC) or 45 (mobile), centered on the maze. Player can see the full layout and plan their route.
-- **Follow Camera:** Smooth third-person view using Vector3.Lerp, looks at player position via LookAt(). More immersive for navigation.
-
-Switching is handled by toggling a boolean in LateUpdate() each frame. On PC press C, on Android tap the CAM button.
-
-### Checkpoint State Management
-The checkpoint stores two values — a boolean (reached?) and a Vector3 (world position). On obstacle collision, GameManager checks this state and respawns at checkpoint or start accordingly. This is a minimal but complete state machine.
-
-### Scoring System
-Score starts at 1000 and decreases at 10 points per second. Each obstacle collision deducts 100 points immediately. Final score is saved on both Win and Lose. This rewards fast, clean runs.
+### Singleton Pattern
+GameManager, UIManager, and MobileJoystick use the singleton pattern with duplicate destruction in Awake, ensuring only one instance exists across scene reloads.
 
 ### Local Leaderboard
-Top 5 scores stored in PlayerPrefs using indexed keys (Score_0 through Score_4). On each game end, the new score is inserted, array sorted descending, and top 5 written back. Displayed on the Win screen.
-
-### UI Architecture
-All UI is built entirely in code via UIManager.cs using a builder pattern (MakePanel, AnchoredText, AnchoredButton, AnchoredSlider). No manual Unity Inspector UI setup required. Canvas uses ScaleWithScreenSize at 1920×1080 reference resolution for consistent layout across all screen sizes.
+Top 5 scores stored in PlayerPrefs using indexed keys. On each game end, scores are inserted into an array, sorted descending, and the top 5 written back — persisted between sessions.
 
 ---
 
-## Challenges Faced
+## What I Learned
 
-**1. Unity 6 New Input System**
-Unity 6 uses the new Input System by default, which broke legacy Input.GetAxis() calls. Required switching to Keyboard.current from UnityEngine.InputSystem throughout all scripts, and setting Active Input Handling to "Both" in Player Settings to maintain compatibility.
+This was my first Unity project. Going in with zero knowledge of Unity or C#, I learned:
 
-**2. Maze Coordinate Accuracy**
-Early maze versions used hand-written wall coordinates that did not match the visual layout. Solved by switching to a 2D grid array where positions are calculated mathematically — same source data drives both the visual diagram and the Unity build.
-
-**3. Android Touch Input**
-Multiple approaches were attempted for mobile input — accelerometer, Unity new Input System touch API, legacy Input.touches. Each had platform-specific compatibility issues with Unity 6's input handling. The final solution was D-pad buttons using Unity's EventTrigger (IPointerDownHandler, IPointerUpHandler) which works reliably on all Android devices regardless of Input System configuration.
-
-**4. DontDestroyOnLoad Causing Duplicate Objects**
-When the scene reloaded on restart, DontDestroyOnLoad caused duplicate canvases, EventSystems, and player balls to stack up. Fixed by removing DontDestroyOnLoad from runtime-created objects and adding singleton duplicate-destruction logic in Awake().
-
-**5. UI Scaling Across Screen Sizes**
-Fixed pixel UI coordinates broke on different Android resolutions. Solved by switching Canvas Scaler to ScaleWithScreenSize mode with reference resolution 1920×1080 and using normalized anchor positions (0.0–1.0) instead of fixed pixel offsets.
+- Unity's component-based architecture and scene management
+- Physics-based movement with Rigidbody
+- Trigger and collider systems for game events
+- Unity's new Input System for cross-platform input
+- Programmatic UI construction with Canvas and RectTransform
+- Game state management with singletons
+- Android build pipeline and real device testing
+- Debugging platform-specific issues (input system conflicts, DontDestroyOnLoad duplicates)
 
 ---
 
-## Improvements With Additional Time
+## Built With
 
-- **Procedural maze generation** — recursive backtracking algorithm for infinite unique layouts
-- **Multiple difficulty levels** — faster AI, more obstacles, narrower corridors
-- **Sound effects** — collision sounds, checkpoint chime, background music
-- **Particle effects** — dust trail on movement, explosion on obstacle collision
-- **Haptic feedback** — vibration on obstacle collision and checkpoint reached
-- **Global leaderboard** — cloud-based scores using Unity Gaming Services
-- **Level progression** — multiple mazes unlocked as player completes each one
-- **Ball skin selection** — cosmetic customization on Start Screen
+- Unity 6 LTS
+- C#
+- Android SDK
+
+---
+
+## Download
+
+APK available in the [Releases](../../releases) section.
